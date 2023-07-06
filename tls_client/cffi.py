@@ -3,18 +3,19 @@ from platform import machine
 import ctypes
 import os
 
+m = machine()
 
 if platform == 'darwin':
-    file_ext = '-arm64.dylib' if machine() == "arm64" else '-x86.dylib'
+    file_ext = '-arm64.dylib' if m == "arm64" else '-x86.dylib'
 elif platform in ('win32', 'cygwin'):
     file_ext = '-64.dll' if 8 == ctypes.sizeof(ctypes.c_voidp) else '-32.dll'
 else:
-    if machine() == "aarch64":
+    if m == "aarch64":
         file_ext = '-arm64.so'
-    elif "x86" in machine():
-        file_ext = '-x86.so'
-    else:
+    elif m == "x86_64":
         file_ext = '-amd64.so'
+    else:
+        file_ext = '-x86.so'
 
 root_dir = os.path.abspath(os.path.dirname(__file__))
 library = ctypes.cdll.LoadLibrary(f'{root_dir}/dependencies/tls-client{file_ext}')

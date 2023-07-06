@@ -52,3 +52,5 @@ res = session.post(
         "key1": "key2"
     }
 )
+
+session.close()

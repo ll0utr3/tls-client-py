@@ -21,5 +21,5 @@ res = session.get(
     headers={
         "key1": "value1",
     },
-    proxy="http://user:password@host:port"
 )
+session.close()

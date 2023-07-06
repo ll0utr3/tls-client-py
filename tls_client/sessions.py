@@ -1,4 +1,4 @@
-from .cffi import request, freeMemory
+from .cffi import request, freeMemory, destroySession
 from .cookies import cookiejar_from_dict, get_cookie_header, merge_cookies, extract_cookies_to_jar
 from .exceptions import TLSClientExeption
 from .response import build_response
@@ -474,3 +474,7 @@ class Session:
     ):
         """Sends a DELETE request"""
         return self.execute_request(method="DELETE", url=url, **kwargs)
+
+    def close(self):
+        destroySession(dumps({"sessionId": self._session_id}).encode())
+

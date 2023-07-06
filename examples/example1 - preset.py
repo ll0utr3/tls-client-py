@@ -11,15 +11,14 @@ import tls_client
 # Android --> okhttp4_android_7, okhttp4_android_8, okhttp4_android_9, okhttp4_android_10, okhttp4_android_11,
 #             okhttp4_android_12, okhttp4_android_13
 
-session = tls_client.Session(
+with tls_client.Session(
     client_identifier="chrome112",
     random_tls_extension_order=True
-)
+) as s:
 
-res = session.get(
-    "https://www.example.com/",
-    headers={
-        "key1": "value1",
-    },
-)
-session.close()
+    res = s.get(
+        "https://www.example.com/",
+        headers={
+            "key1": "value1",
+        },
+    )

@@ -16,26 +16,26 @@ import uuid
 class Session:
 
     def __init__(
-        self,
-        client_identifier: Optional[str] = None,
-        ja3_string: Optional[str] = None,
-        h2_settings: Optional[dict] = None,  # Optional[dict[str, int]]
-        h2_settings_order: Optional[list] = None,  # Optional[list[str]]
-        supported_signature_algorithms: Optional[list] = None,  # Optional[list[str]]
-        supported_delegated_credentials_algorithms: Optional[list] = None,  # Optional[list[str]]
-        supported_versions: Optional[list] = None,  # Optional[list[str]]
-        key_share_curves: Optional[list] = None,  # Optional[list[str]]
-        cert_compression_algo: str = None,
-        additional_decode: str = None,
-        pseudo_header_order: Optional[list] = None,  # Optional[list[str]
-        connection_flow: Optional[int] = None,
-        priority_frames: Optional[list] = None,
-        header_order: Optional[list] = None,  # Optional[list[str]]
-        header_priority: Optional[dict] = None,  # Optional[list[str]]
-        random_tls_extension_order: Optional = False,
-        force_http1: Optional = False,
-        catch_panics: Optional = False,
-        debug: Optional = False
+            self,
+            client_identifier: Optional[str] = None,
+            ja3_string: Optional[str] = None,
+            h2_settings: Optional[dict] = None,  # Optional[dict[str, int]]
+            h2_settings_order: Optional[list] = None,  # Optional[list[str]]
+            supported_signature_algorithms: Optional[list] = None,  # Optional[list[str]]
+            supported_delegated_credentials_algorithms: Optional[list] = None,  # Optional[list[str]]
+            supported_versions: Optional[list] = None,  # Optional[list[str]]
+            key_share_curves: Optional[list] = None,  # Optional[list[str]]
+            cert_compression_algo: str = None,
+            additional_decode: str = None,
+            pseudo_header_order: Optional[list] = None,  # Optional[list[str]
+            connection_flow: Optional[int] = None,
+            priority_frames: Optional[list] = None,
+            header_order: Optional[list] = None,  # Optional[list[str]]
+            header_priority: Optional[dict] = None,  # Optional[list[str]]
+            random_tls_extension_order: Optional = False,
+            force_http1: Optional = False,
+            catch_panics: Optional = False,
+            debug: Optional = False
     ) -> None:
         self._session_id = str(uuid.uuid4())
         # --- Standard Settings ----------------------------------------------------------------------------------------
@@ -272,18 +272,18 @@ class Session:
         self.debug = debug
 
     def execute_request(
-        self,
-        method: str,
-        url: str,
-        params: Optional[dict] = None,  # Optional[dict[str, str]]
-        data: Optional[Union[str, dict]] = None,
-        headers: Optional[dict] = None,  # Optional[dict[str, str]]
-        cookies: Optional[dict] = None,  # Optional[dict[str, str]]
-        json: Optional[dict] = None,  # Optional[dict]
-        allow_redirects: Optional[bool] = False,
-        insecure_skip_verify: Optional[bool] = False,
-        timeout_seconds: Optional[int] = None,
-        proxy: Optional[dict] = None  # Optional[dict[str, str]]
+            self,
+            method: str,
+            url: str,
+            params: Optional[dict] = None,  # Optional[dict[str, str]]
+            data: Optional[Union[str, dict]] = None,
+            headers: Optional[dict] = None,  # Optional[dict[str, str]]
+            cookies: Optional[dict] = None,  # Optional[dict[str, str]]
+            json: Optional[dict] = None,  # Optional[dict]
+            allow_redirects: Optional[bool] = False,
+            insecure_skip_verify: Optional[bool] = False,
+            timeout_seconds: Optional[int] = None,
+            proxy: Optional[dict] = None  # Optional[dict[str, str]]
     ):
         # --- URL ------------------------------------------------------------------------------------------------------
         # Prepare URL - add params to url
@@ -331,13 +331,14 @@ class Session:
         # turn cookie jar into dict
         # in the cookie value the " gets removed, because the fhttp library in golang doesn't accept the character
         request_cookies = [
-            {'domain': c.domain, 'expires': c.expires, 'name': c.name, 'path': c.path, 'value': c.value.replace('"', "")}
+            {'domain': c.domain, 'expires': c.expires, 'name': c.name, 'path': c.path,
+             'value': c.value.replace('"', "")}
             for c in cookies
         ]
 
         # --- Proxy ----------------------------------------------------------------------------------------------------
         proxy = proxy or self.proxies
-        
+
         if type(proxy) is dict and "http" in proxy:
             proxy = proxy["http"]
         elif type(proxy) is str:
@@ -349,7 +350,7 @@ class Session:
         # maximum time to wait
 
         timeout_seconds = timeout_seconds or self.timeout_seconds
-        
+
         # --- Request --------------------------------------------------------------------------------------------------
         is_byte_request = isinstance(request_body, (bytes, bytearray))
         request_payload = {
@@ -382,7 +383,7 @@ class Session:
                 "certCompressionAlgo": self.cert_compression_algo,
                 "supportedVersions": self.supported_versions,
                 "supportedSignatureAlgorithms": self.supported_signature_algorithms,
-                "supportedDelegatedCredentialsAlgorithms": self.supported_delegated_credentials_algorithms ,
+                "supportedDelegatedCredentialsAlgorithms": self.supported_delegated_credentials_algorithms,
                 "keyShareCurves": self.key_share_curves,
             }
         else:
@@ -414,63 +415,63 @@ class Session:
         return build_response(response_object, response_cookie_jar)
 
     def get(
-        self,
-        url: str,
-        **kwargs: Any
+            self,
+            url: str,
+            **kwargs: Any
     ):
         """Sends a GET request"""
         return self.execute_request(method="GET", url=url, **kwargs)
 
     def options(
-        self,
-        url: str,
-        **kwargs: Any
+            self,
+            url: str,
+            **kwargs: Any
     ):
         """Sends a OPTIONS request"""
         return self.execute_request(method="OPTIONS", url=url, **kwargs)
 
     def head(
-        self,
-        url: str,
-        **kwargs: Any
+            self,
+            url: str,
+            **kwargs: Any
     ):
         """Sends a HEAD request"""
         return self.execute_request(method="HEAD", url=url, **kwargs)
 
     def post(
-        self,
-        url: str,
-        data: Optional[Union[str, dict]] = None,
-        json: Optional[dict] = None,
-        **kwargs: Any
+            self,
+            url: str,
+            data: Optional[Union[str, dict]] = None,
+            json: Optional[dict] = None,
+            **kwargs: Any
     ):
         """Sends a POST request"""
         return self.execute_request(method="POST", url=url, data=data, json=json, **kwargs)
 
     def put(
-        self,
-        url: str,
-        data: Optional[Union[str, dict]] = None,
-        json: Optional[dict] = None,
-        **kwargs: Any
+            self,
+            url: str,
+            data: Optional[Union[str, dict]] = None,
+            json: Optional[dict] = None,
+            **kwargs: Any
     ):
         """Sends a PUT request"""
         return self.execute_request(method="PUT", url=url, data=data, json=json, **kwargs)
 
     def patch(
-        self,
-        url: str,
-        data: Optional[Union[str, dict]] = None,
-        json: Optional[dict] = None,
-        **kwargs: Any
+            self,
+            url: str,
+            data: Optional[Union[str, dict]] = None,
+            json: Optional[dict] = None,
+            **kwargs: Any
     ):
         """Sends a PATCH request"""
         return self.execute_request(method="PATCH", url=url, data=data, json=json, **kwargs)
 
     def delete(
-        self,
-        url: str,
-        **kwargs: Any
+            self,
+            url: str,
+            **kwargs: Any
     ):
         """Sends a DELETE request"""
         return self.execute_request(method="DELETE", url=url, **kwargs)
@@ -478,3 +479,8 @@ class Session:
     def close(self):
         destroySession(dumps({"sessionId": self._session_id}).encode())
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()

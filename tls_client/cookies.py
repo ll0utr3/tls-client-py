@@ -1,4 +1,8 @@
+import ctypes
+import json
+
 from .structures import CaseInsensitiveDict
+from .cffi import addCookiesToSession
 
 from http.cookiejar import CookieJar, Cookie
 from typing import MutableMapping, Union, Any
@@ -121,6 +125,10 @@ class RequestsCookieJar(CookieJar, MutableMapping):
     .. warning:: dictionary operations that are normally O(1) may be O(n).
     """
 
+    def __init__(self):
+        super().__init__()
+        self.session_id = ""
+
     def get(self, name, default=None, domain=None, path=None):
         """Dict-like get() that also supports optional domain and path args in
         order to resolve naming collisions from using one cookie jar over
@@ -143,6 +151,20 @@ class RequestsCookieJar(CookieJar, MutableMapping):
             remove_cookie_by_name(
                 self, name, domain=kwargs.get("domain"), path=kwargs.get("path")
             )
+            """
+            payload = {
+                "sessionId": self.session_id,
+                "url": f"https://{kwargs.get('domain')}{kwargs.get('path')}",
+                "cookies": [{"name": name, "value": "", "expires": -1}],
+            }
+            payload = json.dumps(payload)
+            print(payload)
+            r = addCookiesToSession(payload.encode())
+            response_bytes = ctypes.string_at(r)
+            # convert our byte array to a string (tls client returns json)
+            response_string = response_bytes.decode('utf-8')
+            print(response_string)
+            """
             return
 
         c = create_cookie(name, value, **kwargs)
@@ -240,7 +262,7 @@ class RequestsCookieJar(CookieJar, MutableMapping):
         dictionary = {}
         for cookie in iter(self):
             if (domain is None or cookie.domain == domain) and (
-                path is None or cookie.path == path
+                    path is None or cookie.path == path
             ):
                 dictionary[cookie.name] = cookie.value
         return dictionary
@@ -275,9 +297,9 @@ class RequestsCookieJar(CookieJar, MutableMapping):
 
     def set_cookie(self, cookie, *args, **kwargs):
         if (
-            hasattr(cookie.value, "startswith")
-            and cookie.value.startswith('"')
-            and cookie.value.endswith('"')
+                hasattr(cookie.value, "startswith")
+                and cookie.value.startswith('"')
+                and cookie.value.endswith('"')
         ):
             cookie.value = cookie.value.replace('\\"', "")
         return super().set_cookie(cookie, *args, **kwargs)
@@ -444,7 +466,7 @@ def extract_cookies_to_jar(
         request_headers: CaseInsensitiveDict,
         cookie_jar: RequestsCookieJar,
         response_headers: dict
-    ) -> RequestsCookieJar:
+) -> RequestsCookieJar:
     response_cookie_jar = cookiejar_from_dict({})
 
     req = MockRequest(request_url, request_headers)

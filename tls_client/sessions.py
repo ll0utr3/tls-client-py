@@ -1,3 +1,5 @@
+import json
+
 from .cffi import request, freeMemory, destroySession
 from .cookies import cookiejar_from_dict, get_cookie_header, merge_cookies, extract_cookies_to_jar
 from .exceptions import TLSClientExeption
@@ -63,7 +65,7 @@ class Session:
 
         # CookieJar containing all currently outstanding cookies set on this session
         self.cookies = cookiejar_from_dict({})
-
+        self.cookies.session_id = self._session_id
         # Timeout
         self.timeout_seconds = 30
 
@@ -350,7 +352,6 @@ class Session:
         # maximum time to wait
 
         timeout_seconds = timeout_seconds or self.timeout_seconds
-
         # --- Request --------------------------------------------------------------------------------------------------
         is_byte_request = isinstance(request_body, (bytes, bytearray))
         request_payload = {
@@ -477,7 +478,9 @@ class Session:
         return self.execute_request(method="DELETE", url=url, **kwargs)
 
     def close(self):
-        destroySession(dumps({"sessionId": self._session_id}).encode())
+        r = destroySession(dumps({"sessionId": self._session_id}).encode())
+        response = json.loads(ctypes.string_at(r).decode('utf-8'))
+        freeMemory(response['id'].encode('utf-8'))
 
     def __enter__(self):
         return self

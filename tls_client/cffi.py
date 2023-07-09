@@ -36,3 +36,7 @@ destroySession.restype = ctypes.c_char_p
 destroyAll = library.destroyAll
 destroyAll.argtypes = []
 destroyAll.restype = ctypes.c_char_p
+
+addCookiesToSession = library.addCookiesToSession
+addCookiesToSession.argtypes = [ctypes.c_char_p]
+addCookiesToSession.restype = ctypes.c_char_p

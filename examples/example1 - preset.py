@@ -12,7 +12,7 @@ import tls_client
 #             okhttp4_android_12, okhttp4_android_13
 
 with tls_client.Session(
-    client_identifier="chrome112",
+    client_identifier="chrome_112",
     random_tls_extension_order=True
 ) as s:
 
@@ -22,3 +22,12 @@ with tls_client.Session(
             "key1": "value1",
         },
     )
+    print(res.text)
+
+    res = s.get(
+        "https://www.example.com/",
+        headers={
+            "key1": "value1",
+        },
+    )
+    print(res.text)

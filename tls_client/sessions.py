@@ -1,5 +1,3 @@
-import json
-
 from .cffi import request, freeMemory, destroySession
 from .cookies import cookiejar_from_dict, get_cookie_header, merge_cookies, extract_cookies_to_jar
 from .exceptions import TLSClientExeption
@@ -8,7 +6,7 @@ from .structures import CaseInsensitiveDict
 from .__version__ import __version__
 
 from typing import Any, Optional, Union
-from json import dumps, loads
+from ujson import dumps, loads
 import urllib.parse
 import base64
 import ctypes
@@ -285,7 +283,10 @@ class Session:
             allow_redirects: Optional[bool] = False,
             insecure_skip_verify: Optional[bool] = False,
             timeout_seconds: Optional[int] = None,
-            proxy: Optional[dict] = None  # Optional[dict[str, str]]
+            proxy: Optional[dict] = None,  # Optional[dict[str, str]]
+
+            disable_cookies: bool = True,
+            keepalive: bool = False,
     ):
         # --- URL ------------------------------------------------------------------------------------------------------
         # Prepare URL - add params to url
@@ -333,11 +334,10 @@ class Session:
         # turn cookie jar into dict
         # in the cookie value the " gets removed, because the fhttp library in golang doesn't accept the character
         request_cookies = [
-            {'domain': c.domain, 'expires': c.expires, 'name': c.name, 'path': c.path,
+            {'domain': c.domain, 'expires': 99999, 'name': c.name, 'path': c.path,
              'value': c.value.replace('"', "")}
             for c in cookies
         ]
-
         # --- Proxy ----------------------------------------------------------------------------------------------------
         proxy = proxy or self.proxies
 
@@ -369,8 +369,20 @@ class Session:
             "requestUrl": url,
             "requestMethod": method,
             "requestBody": base64.b64encode(request_body).decode() if is_byte_request else request_body,
-            "requestCookies": request_cookies,
+            # "requestCookies": request_cookies,
             "timeoutSeconds": timeout_seconds,
+            "withoutCookieJar": disable_cookies,
+            "transportOptions": {
+                "disableKeepAlives": True,
+                # "disableCompression": False,
+                "maxIdleConns": 0,
+                "maxIdleConnsPerHost": 0,
+                #"maxConnsPerHost": 65535,
+                #"maxResponseHeaderBytes": 0,
+                #"writeBufferSize": 0,
+                #"readBufferSize": 0,
+                "idleConnTimeout": 0,
+            }
         }
         if self.client_identifier is None:
             request_payload["customTlsClient"] = {
@@ -479,7 +491,7 @@ class Session:
 
     def close(self):
         r = destroySession(dumps({"sessionId": self._session_id}).encode())
-        response = json.loads(ctypes.string_at(r).decode('utf-8'))
+        response = loads(ctypes.string_at(r).decode('utf-8'))
         freeMemory(response['id'].encode('utf-8'))
 
     def __enter__(self):

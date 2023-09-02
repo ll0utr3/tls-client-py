@@ -35,7 +35,8 @@ class Session:
             random_tls_extension_order: Optional = False,
             force_http1: Optional = False,
             catch_panics: Optional = False,
-            debug: Optional = False
+            debug: Optional = False,
+            disable_cookies: bool = True,
     ) -> None:
         self._session_id = str(uuid.uuid4())
         # --- Standard Settings ----------------------------------------------------------------------------------------
@@ -271,6 +272,8 @@ class Session:
         # debugging
         self.debug = debug
 
+        self.disable_cookies: bool = disable_cookies
+
     def execute_request(
             self,
             method: str,
@@ -284,9 +287,6 @@ class Session:
             insecure_skip_verify: Optional[bool] = False,
             timeout_seconds: Optional[int] = None,
             proxy: Optional[dict] = None,  # Optional[dict[str, str]]
-
-            disable_cookies: bool = True,
-            keepalive: bool = False,
     ):
         # --- URL ------------------------------------------------------------------------------------------------------
         # Prepare URL - add params to url
@@ -371,7 +371,7 @@ class Session:
             "requestBody": base64.b64encode(request_body).decode() if is_byte_request else request_body,
             # "requestCookies": request_cookies,
             "timeoutSeconds": timeout_seconds,
-            "withoutCookieJar": disable_cookies,
+            "withoutCookieJar": self.disable_cookies,
             "transportOptions": {
                 "disableKeepAlives": True,
                 # "disableCompression": False,

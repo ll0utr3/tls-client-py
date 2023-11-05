@@ -3,7 +3,6 @@ from .cookies import cookiejar_from_dict, get_cookie_header, merge_cookies, extr
 from .exceptions import TLSClientExeption
 from .response import build_response
 from .structures import CaseInsensitiveDict
-from .__version__ import __version__
 
 from typing import Any, Optional, Union
 from ujson import dumps, loads
@@ -36,257 +35,59 @@ class Session:
             force_http1: Optional = False,
             catch_panics: Optional = False,
             debug: Optional = False,
+
             disable_cookies: bool = True,
+            disable_keepalive: bool = True,
     ) -> None:
         self._session_id = str(uuid.uuid4())
-        # --- Standard Settings ----------------------------------------------------------------------------------------
 
-        # Case-insensitive dictionary of headers, send on each request
-        self.headers = CaseInsensitiveDict(
-            {
-                "User-Agent": f"tls-client/{__version__}",
-                "Accept-Encoding": "gzip, deflate, br",
-                "Accept": "*/*",
-                "Connection": "keep-alive",
-            }
-        )
+        self.proxy: str = ""
 
-        # Example:
-        # {
-        #     "http": "http://user:pass@ip:port",
-        #     "https": "http://user:pass@ip:port"
-        # }
-        self.proxies = {}
-
-        # Dictionary of querystring data to attach to each request. The dictionary values may be lists for representing
-        # multivalued query parameters.
         self.params = {}
 
-        # CookieJar containing all currently outstanding cookies set on this session
         self.cookies = cookiejar_from_dict({})
         self.cookies.session_id = self._session_id
-        # Timeout
-        self.timeout_seconds = 30
+        self.timeout = 30
 
-        # --- Advanced Settings ----------------------------------------------------------------------------------------
-
-        # Examples:
-        # Chrome --> chrome_103, chrome_104, chrome_105, chrome_106
-        # Firefox --> firefox_102, firefox_104
-        # Opera --> opera_89, opera_90
-        # Safari --> safari_15_3, safari_15_6_1, safari_16_0
-        # iOS --> safari_ios_15_5, safari_ios_15_6, safari_ios_16_0
-        # iPadOS --> safari_ios_15_6
         self.client_identifier = client_identifier
-
-        # Set JA3 --> TLSVersion, Ciphers, Extensions, EllipticCurves, EllipticCurvePointFormats
-        # Example:
-        # 771,4865-4866-4867-49195-49199-49196-49200-52393-52392-49171-49172-156-157-47-53,0-23-65281-10-11-35-16-5-13-18-51-45-43-27-17513,29-23-24,0
         self.ja3_string = ja3_string
-
-        # HTTP2 Header Frame Settings
-        # Possible Settings:
-        # HEADER_TABLE_SIZE
-        # SETTINGS_ENABLE_PUSH
-        # MAX_CONCURRENT_STREAMS
-        # INITIAL_WINDOW_SIZE
-        # MAX_FRAME_SIZE
-        # MAX_HEADER_LIST_SIZE
-        #
-        # Example:
-        # {
-        #     "HEADER_TABLE_SIZE": 65536,
-        #     "MAX_CONCURRENT_STREAMS": 1000,
-        #     "INITIAL_WINDOW_SIZE": 6291456,
-        #     "MAX_HEADER_LIST_SIZE": 262144
-        # }
         self.h2_settings = h2_settings
-
-        # HTTP2 Header Frame Settings Order
-        # Example:
-        # [
-        #     "HEADER_TABLE_SIZE",
-        #     "MAX_CONCURRENT_STREAMS",
-        #     "INITIAL_WINDOW_SIZE",
-        #     "MAX_HEADER_LIST_SIZE"
-        # ]
         self.h2_settings_order = h2_settings_order
-
-        # Supported Signature Algorithms
-        # Possible Settings:
-        # PKCS1WithSHA256
-        # PKCS1WithSHA384
-        # PKCS1WithSHA512
-        # PSSWithSHA256
-        # PSSWithSHA384
-        # PSSWithSHA512
-        # ECDSAWithP256AndSHA256
-        # ECDSAWithP384AndSHA384
-        # ECDSAWithP521AndSHA512
-        # PKCS1WithSHA1
-        # ECDSAWithSHA1
-        #
-        # Example:
-        # [
-        #     "ECDSAWithP256AndSHA256",
-        #     "PSSWithSHA256",
-        #     "PKCS1WithSHA256",
-        #     "ECDSAWithP384AndSHA384",
-        #     "PSSWithSHA384",
-        #     "PKCS1WithSHA384",
-        #     "PSSWithSHA512",
-        #     "PKCS1WithSHA512",
-        # ]
         self.supported_signature_algorithms = supported_signature_algorithms
-
-        # Supported Delegated Credentials Algorithms
-        # Possible Settings:
-        # PKCS1WithSHA256
-        # PKCS1WithSHA384
-        # PKCS1WithSHA512
-        # PSSWithSHA256
-        # PSSWithSHA384
-        # PSSWithSHA512
-        # ECDSAWithP256AndSHA256
-        # ECDSAWithP384AndSHA384
-        # ECDSAWithP521AndSHA512
-        # PKCS1WithSHA1
-        # ECDSAWithSHA1
-        #
-        # Example:
-        # [
-        #     "ECDSAWithP256AndSHA256",
-        #     "PSSWithSHA256",
-        #     "PKCS1WithSHA256",
-        #     "ECDSAWithP384AndSHA384",
-        #     "PSSWithSHA384",
-        #     "PKCS1WithSHA384",
-        #     "PSSWithSHA512",
-        #     "PKCS1WithSHA512",
-        # ]
         self.supported_delegated_credentials_algorithms = supported_delegated_credentials_algorithms
-
-        # Supported Versions
-        # Possible Settings:
-        # GREASE
-        # 1.3
-        # 1.2
-        # 1.1
-        # 1.0
-        #
-        # Example:
-        # [
-        #     "GREASE",
-        #     "1.3",
-        #     "1.2"
-        # ]
         self.supported_versions = supported_versions
-
-        # Key Share Curves
-        # Possible Settings:
-        # GREASE
-        # P256
-        # P384
-        # P521
-        # X25519
-        #
-        # Example:
-        # [
-        #     "GREASE",
-        #     "X25519"
-        # ]
         self.key_share_curves = key_share_curves
-
-        # Cert Compression Algorithm
-        # Examples: "zlib", "brotli", "zstd"
         self.cert_compression_algo = cert_compression_algo
-
-        # Additional Decode
-        # Make sure the go code decodes the response body once explicit by provided algorithm.
-        # Examples: null, "gzip", "br", "deflate"
         self.additional_decode = additional_decode
-
-        # Pseudo Header Order (:authority, :method, :path, :scheme)
-        # Example:
-        # [
-        #     ":method",
-        #     ":authority",
-        #     ":scheme",
-        #     ":path"
-        # ]
         self.pseudo_header_order = pseudo_header_order
-
-        # Connection Flow / Window Size Increment
-        # Example:
-        # 15663105
         self.connection_flow = connection_flow
-
-        # Example:
-        # [
-        #   {
-        #     "streamID": 3,
-        #     "priorityParam": {
-        #       "weight": 201,
-        #       "streamDep": 0,
-        #       "exclusive": false
-        #     }
-        #   },
-        #   {
-        #     "streamID": 5,
-        #     "priorityParam": {
-        #       "weight": 101,
-        #       "streamDep": false,
-        #       "exclusive": 0
-        #     }
-        #   }
-        # ]
         self.priority_frames = priority_frames
-
-        # Order of your headers
-        # Example:
-        # [
-        #   "key1",
-        #   "key2"
-        # ]
         self.header_order = header_order
-
-        # Header Priority
-        # Example:
-        # {
-        #   "streamDep": 1,
-        #   "exclusive": true,
-        #   "weight": 1
-        # }
         self.header_priority = header_priority
-
-        # randomize tls extension order
         self.random_tls_extension_order = random_tls_extension_order
-
-        # force HTTP1
         self.force_http1 = force_http1
-
-        # catch panics
-        # avoid the tls client to print the whole stacktrace when a panic (critical go error) happens
         self.catch_panics = catch_panics
-
-        # debugging
         self.debug = debug
 
         self.disable_cookies: bool = disable_cookies
+        self.disable_keepalive: bool = disable_keepalive
 
     def execute_request(
             self,
             method: str,
             url: str,
-            params: Optional[dict] = None,  # Optional[dict[str, str]]
+            params: Optional[dict] = None,
+
             data: Optional[Union[str, dict]] = None,
-            headers: Optional[dict] = None,  # Optional[dict[str, str]]
-            cookies: Optional[dict] = None,  # Optional[dict[str, str]]
-            json: Optional[dict] = None,  # Optional[dict]
+            json: Optional[dict] = None,
+            content: str | bytes | None = None,
+
+            headers: Optional[dict] = None,
+            cookies: Optional[dict] = None,
             allow_redirects: Optional[bool] = False,
             insecure_skip_verify: Optional[bool] = False,
-            timeout_seconds: Optional[int] = None,
-            proxy: Optional[dict] = None,  # Optional[dict[str, str]]
+            timeout: int | None = None,
+            proxy: str | None = None,
     ):
         # --- URL ------------------------------------------------------------------------------------------------------
         # Prepare URL - add params to url
@@ -296,36 +97,22 @@ class Session:
         # --- Request Body ---------------------------------------------------------------------------------------------
         # Prepare request body - build request body
         # Data has priority. JSON is only used if data is None.
-        if data is None and json is not None:
-            if type(json) in [dict, list]:
-                json = dumps(json)
-            request_body = json
+        if json is not None:
+            request_body = dumps(json)
             content_type = "application/json"
-        elif data is not None and type(data) not in [str, bytes]:
+        elif data is not None:
             request_body = urllib.parse.urlencode(data, doseq=True)
             content_type = "application/x-www-form-urlencoded"
         else:
-            request_body = data
+            request_body = content
             content_type = None
-        # set content type if it isn't set
-        if content_type is not None and "content-type" not in self.headers:
-            self.headers["Content-Type"] = content_type
 
-        # --- Headers --------------------------------------------------------------------------------------------------
-        if self.headers is None:
-            headers = CaseInsensitiveDict(headers)
-        elif headers is None:
-            headers = self.headers
-        else:
-            merged_headers = CaseInsensitiveDict(self.headers)
-            merged_headers.update(headers)
-
-            # Remove items, where the key or value is set to None.
-            none_keys = [k for (k, v) in merged_headers.items() if v is None or k is None]
-            for key in none_keys:
-                del merged_headers[key]
-
-            headers = merged_headers
+        if headers is None:
+            headers = {}
+        headers = CaseInsensitiveDict(headers)
+        if content_type is not None and "Content-Type" not in headers:
+            if content_type is not None:
+                headers["Content-Type"] = content_type
 
         # --- Cookies --------------------------------------------------------------------------------------------------
         cookies = cookies or {}
@@ -339,19 +126,12 @@ class Session:
             for c in cookies
         ]
         # --- Proxy ----------------------------------------------------------------------------------------------------
-        proxy = proxy or self.proxies
-
-        if type(proxy) is dict and "http" in proxy:
-            proxy = proxy["http"]
-        elif type(proxy) is str:
-            proxy = proxy
-        else:
-            proxy = ""
+        proxy = proxy or self.proxy
 
         # --- Timeout --------------------------------------------------------------------------------------------------
         # maximum time to wait
 
-        timeout_seconds = timeout_seconds or self.timeout_seconds
+        timeout_seconds = timeout or self.timeout
         # --- Request --------------------------------------------------------------------------------------------------
         is_byte_request = isinstance(request_body, (bytes, bytearray))
         request_payload = {
@@ -373,15 +153,15 @@ class Session:
             "timeoutSeconds": timeout_seconds,
             "withoutCookieJar": self.disable_cookies,
             "transportOptions": {
-                "disableKeepAlives": True,
+                "disableKeepAlives": self.disable_keepalive,
                 # "disableCompression": False,
-                "maxIdleConns": 0,
-                "maxIdleConnsPerHost": 0,
-                #"maxConnsPerHost": 65535,
-                #"maxResponseHeaderBytes": 0,
-                #"writeBufferSize": 0,
-                #"readBufferSize": 0,
-                "idleConnTimeout": 0,
+                "maxIdleConns": 60 if not self.disable_keepalive else 0,
+                "maxIdleConnsPerHost": 50 if not self.disable_keepalive else 0,
+                # "maxConnsPerHost": 65535,
+                # "maxResponseHeaderBytes": 0,
+                # "writeBufferSize": 0,
+                # "readBufferSize": 0,
+                "idleConnTimeout": 60000000000 if not self.disable_keepalive else 0,
             }
         }
         if self.client_identifier is None:

@@ -1,9 +1,8 @@
 from .cookies import cookiejar_from_dict, RequestsCookieJar
 from .structures import CaseInsensitiveDict
 
-from http.cookiejar import CookieJar
 from typing import Union
-import json
+from ujson import loads
 
 
 class Response:
@@ -36,7 +35,7 @@ class Response:
 
     def json(self, **kwargs):
         """parse response body to json (dict/list)"""
-        return json.loads(self.text, **kwargs)
+        return loads(self.text, **kwargs)
     
     @property
     def content(self):

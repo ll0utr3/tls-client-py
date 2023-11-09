@@ -38,10 +38,13 @@ class Session:
 
             disable_cookies: bool = True,
             disable_keepalive: bool = True,
+            verify: bool = True,
     ) -> None:
         self._session_id = str(uuid.uuid4())
 
         self.proxy: str = ""
+
+        self.verify = verify
 
         self.params = {}
 
@@ -85,10 +88,13 @@ class Session:
             headers: Optional[dict] = None,
             cookies: Optional[dict] = None,
             allow_redirects: Optional[bool] = False,
-            insecure_skip_verify: Optional[bool] = False,
+            verify: bool = True,
             timeout: int | None = None,
             proxy: str | None = None,
+
+            custom_host: str = "",
     ):
+        verify = self.verify or verify
         # --- URL ------------------------------------------------------------------------------------------------------
         # Prepare URL - add params to url
         if params is not None:
@@ -135,6 +141,7 @@ class Session:
         # --- Request --------------------------------------------------------------------------------------------------
         is_byte_request = isinstance(request_body, (bytes, bytearray))
         request_payload = {
+            "serverNameOverwrite": custom_host,
             "sessionId": self._session_id,
             "followRedirects": allow_redirects,
             "forceHttp1": self.force_http1,
@@ -142,7 +149,7 @@ class Session:
             "catchPanics": self.catch_panics,
             "headers": dict(headers),
             "headerOrder": self.header_order,
-            "insecureSkipVerify": insecure_skip_verify,
+            "insecureSkipVerify": not verify,
             "isByteRequest": is_byte_request,
             "additionalDecode": self.additional_decode,
             "proxyUrl": proxy,

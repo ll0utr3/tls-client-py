@@ -156,7 +156,7 @@ class Session:
             "requestUrl": url,
             "requestMethod": method,
             "requestBody": base64.b64encode(request_body).decode() if is_byte_request else request_body,
-            # "requestCookies": request_cookies,
+            "requestCookies": request_cookies,
             "timeoutSeconds": timeout_seconds,
             "withoutCookieJar": self.disable_cookies,
             "transportOptions": {

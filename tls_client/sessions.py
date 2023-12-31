@@ -1,5 +1,5 @@
 from .cffi import request, freeMemory, destroySession
-from .cookies import cookiejar_from_dict, get_cookie_header, merge_cookies, extract_cookies_to_jar
+from .cookies import cookiejar_from_dict, merge_cookies, extract_cookies_to_jar
 from .exceptions import TLSClientExeption
 from .response import build_response
 from .structures import CaseInsensitiveDict
@@ -119,6 +119,8 @@ class Session:
         if content_type is not None and "Content-Type" not in headers:
             if content_type is not None:
                 headers["Content-Type"] = content_type
+        if "Accept-Encoding" not in headers:
+            headers["Accept-Encoding"] = "gzip, deflate, br"
 
         # --- Cookies --------------------------------------------------------------------------------------------------
         cookies = cookies or {}

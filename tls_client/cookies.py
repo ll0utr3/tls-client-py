@@ -1,8 +1,4 @@
-import ctypes
-import json
-
 from .structures import CaseInsensitiveDict
-from .cffi import addCookiesToSession
 
 from http.cookiejar import CookieJar, Cookie
 from typing import MutableMapping, Union, Any

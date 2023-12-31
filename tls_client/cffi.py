@@ -8,17 +8,17 @@ m = machine()
 if platform == 'darwin':
     file_ext = '-arm64.dylib' if m == "arm64" else '-x86.dylib'
 elif platform in ('win32', 'cygwin'):
-    file_ext = '-64.dll' if 8 == ctypes.sizeof(ctypes.c_voidp) else '-32.dll'
+    file_ext = 'windows-64.dll' if 8 == ctypes.sizeof(ctypes.c_voidp) else 'windows-32.dll'
 else:
     if m == "aarch64":
         file_ext = '-arm64.so'
     elif m == "x86_64":
-        file_ext = '-amd64.so'
+        file_ext = 'linux-ubuntu-amd64.so'
     else:
         file_ext = '-x86.so'
 
 root_dir = os.path.abspath(os.path.dirname(__file__))
-library = ctypes.cdll.LoadLibrary(f'{root_dir}/dependencies/tls-client{file_ext}')
+library = ctypes.cdll.LoadLibrary(f'{root_dir}/dependencies/tls-client-{file_ext}')
 
 # extract the exposed request function from the shared package
 request = library.request

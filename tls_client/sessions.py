@@ -10,6 +10,7 @@ import urllib.parse
 import base64
 import ctypes
 import uuid
+import random
 
 
 class Session:
@@ -142,6 +143,11 @@ class Session:
         timeout_seconds = timeout or self.timeout
         # --- Request --------------------------------------------------------------------------------------------------
         is_byte_request = isinstance(request_body, (bytes, bytearray))
+
+        header_order = self.header_order
+        if not header_order and headers:
+            header_order = random.sample(list(headers.keys()), len(headers.keys()))
+
         request_payload = {
             "serverNameOverwrite": custom_host,
             "sessionId": self._session_id,
@@ -150,7 +156,7 @@ class Session:
             "withDebug": self.debug,
             "catchPanics": self.catch_panics,
             "headers": dict(headers),
-            "headerOrder": self.header_order,
+            "headerOrder": header_order,
             "insecureSkipVerify": not verify,
             "isByteRequest": is_byte_request,
             "additionalDecode": self.additional_decode,

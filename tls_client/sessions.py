@@ -1,7 +1,7 @@
 from .cffi import request, freeMemory, destroySession
 from .cookies import cookiejar_from_dict, merge_cookies, extract_cookies_to_jar
 from .exceptions import TLSClientExeption
-from .response import build_response
+from .response import build_response, Response
 from .structures import CaseInsensitiveDict
 
 from typing import Any, Optional, Union
@@ -94,7 +94,7 @@ class Session:
             proxy: str | None = None,
 
             custom_host: str = "",
-    ):
+    ) -> Response:
         verify = self.verify or verify
         # --- URL ------------------------------------------------------------------------------------------------------
         # Prepare URL - add params to url
@@ -226,7 +226,7 @@ class Session:
             self,
             url: str,
             **kwargs: Any
-    ):
+    ) -> Response:
         """Sends a GET request"""
         return self.execute_request(method="GET", url=url, **kwargs)
 
@@ -234,7 +234,7 @@ class Session:
             self,
             url: str,
             **kwargs: Any
-    ):
+    ) -> Response:
         """Sends a OPTIONS request"""
         return self.execute_request(method="OPTIONS", url=url, **kwargs)
 
@@ -242,7 +242,7 @@ class Session:
             self,
             url: str,
             **kwargs: Any
-    ):
+    ) -> Response:
         """Sends a HEAD request"""
         return self.execute_request(method="HEAD", url=url, **kwargs)
 
@@ -252,7 +252,7 @@ class Session:
             data: Optional[Union[str, dict]] = None,
             json: Optional[dict] = None,
             **kwargs: Any
-    ):
+    ) -> Response:
         """Sends a POST request"""
         return self.execute_request(method="POST", url=url, data=data, json=json, **kwargs)
 
@@ -262,7 +262,7 @@ class Session:
             data: Optional[Union[str, dict]] = None,
             json: Optional[dict] = None,
             **kwargs: Any
-    ):
+    ) -> Response:
         """Sends a PUT request"""
         return self.execute_request(method="PUT", url=url, data=data, json=json, **kwargs)
 
@@ -272,7 +272,7 @@ class Session:
             data: Optional[Union[str, dict]] = None,
             json: Optional[dict] = None,
             **kwargs: Any
-    ):
+    ) -> Response:
         """Sends a PATCH request"""
         return self.execute_request(method="PATCH", url=url, data=data, json=json, **kwargs)
 
@@ -280,7 +280,7 @@ class Session:
             self,
             url: str,
             **kwargs: Any
-    ):
+    ) -> Response:
         """Sends a DELETE request"""
         return self.execute_request(method="DELETE", url=url, **kwargs)
 

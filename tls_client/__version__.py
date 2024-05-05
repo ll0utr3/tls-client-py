@@ -6,6 +6,6 @@
 
 __title__ = "tls_client"
 __description__ = "Advanced Python HTTP Client with session closing"
-__version__ = "1.7.3"
+__version__ = "1.7.4"
 __author__ = "ll0utr3"  # fork from Florian
 __license__ = "MIT"

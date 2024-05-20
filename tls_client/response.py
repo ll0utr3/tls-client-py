@@ -2,7 +2,7 @@ from .cookies import cookiejar_from_dict, RequestsCookieJar
 from .structures import CaseInsensitiveDict
 
 from typing import Union
-from ujson import loads
+from orjson import loads
 
 
 class Response:

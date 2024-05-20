@@ -5,7 +5,7 @@ from .response import build_response, Response
 from .structures import CaseInsensitiveDict
 
 from typing import Any, Optional, Union
-from ujson import dumps, loads
+from orjson import dumps, loads
 import urllib.parse
 import base64
 import ctypes
@@ -32,7 +32,7 @@ class Session:
             priority_frames: Optional[list] = None,
             header_order: Optional[list] = None,  # Optional[list[str]]
             header_priority: Optional[dict] = None,  # Optional[list[str]]
-            random_tls_extension_order: Optional = False,
+            random_tls_extension_order: Optional = True,
             force_http1: Optional = False,
             catch_panics: Optional = False,
             debug: Optional = False,
@@ -199,7 +199,7 @@ class Session:
             request_payload["withRandomTLSExtensionOrder"] = self.random_tls_extension_order
 
         # this is a pointer to the response
-        response = request(dumps(request_payload).encode('utf-8'))
+        response = request(dumps(request_payload))
         # dereference the pointer to a byte array
         response_bytes = ctypes.string_at(response)
         # convert our byte array to a string (tls client returns json)
@@ -285,7 +285,7 @@ class Session:
         return self.execute_request(method="DELETE", url=url, **kwargs)
 
     def close(self):
-        r = destroySession(dumps({"sessionId": self._session_id}).encode())
+        r = destroySession(dumps({"sessionId": self._session_id}))
         response = loads(ctypes.string_at(r).decode('utf-8'))
         freeMemory(response['id'].encode('utf-8'))
 

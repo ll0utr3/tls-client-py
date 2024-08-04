@@ -33,9 +33,9 @@ class Response:
     def __repr__(self):
         return f"<Response [{self.status_code}]>"
 
-    def json(self, **kwargs):
+    def json(self):
         """parse response body to json (dict/list)"""
-        return loads(self.text, **kwargs)
+        return loads(self.text)
     
     @property
     def content(self):
